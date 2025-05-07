@@ -7,9 +7,15 @@ compress_models.py
 
 # Python environment and cache
 venv/
+venv312/
 __pycache__/
 *.pyc
 
 # IDE and temporary files
 .vscode/
 *.log
+.vercel/
+
+# Editor and OS files
+.DS_Store
+Thumbs.db
