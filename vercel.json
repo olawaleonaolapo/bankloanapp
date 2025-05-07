@@ -10,23 +10,18 @@
       "use": "@vercel/python"
     }
   ],
-  "functions": {
-    "api/bankloanfabend.py": {
-      "maxDuration": 60
-    }
-  },
   "routes": [
     {
       "src": "/api/(.*)",
       "dest": "/api/bankloanfabend.py"
     },
     {
-      "src": "/",
+      "src": "/(.*)",
       "dest": "/api/bankloanfabend.py"
     },
     {
-      "src": "/(404|bankloanindex)\\.html",
-      "dest": "/public/$1.html",
+      "src": "/(.+\\.html)",
+      "dest": "/public/$1",
       "headers": {
         "Cache-Control": "public, max-age=3600, must-revalidate"
       }
