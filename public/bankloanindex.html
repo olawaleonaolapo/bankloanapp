@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bank Loan Approval Prediction</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        form {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="number"],
+        select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        #results {
+            display: none;
+            margin-top: 20px;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        #results h2 {
+            margin-top: 0;
+            color: #333;
+        }
+        #results p {
+            margin: 5px 0;
+        }
+        #inputSummary {
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Bank Loan Approval Prediction</h1>
+    <form id="predictionForm">
+        <div class="form-group">
+            <label for="income">Annual Income ($):</label>
+            <input type="number" id="income" step="any" min="0" required>
+        </div>
+        <div class="form-group">
+            <label for="experience">Years of Experience:</label>
+            <input type="number" id="experience" step="any" min="0" required>
+        </div>
+        <div class="form-group">
+            <label for="ccavg">Average Credit Card Spending ($):</label>
+            <input type="number" id="ccavg" step="any" min="0" required>
+        </div>
+        <div class="form-group">
+            <label for="family">Family Size:</label>
+            <input type="number" id="family" min="1" max="4" required>
+        </div>
+        <div class="form-group">
+            <label for="education">Education Level:</label>
+            <select id="education" required>
+                <option value="" disabled selected>Select Education</option>
+                <option value="High School">High School</option>
+                <option value="Bachelors">Bachelors</option>
+                <option value="Masters & Above">Masters & Above</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="securitiesAccount">Securities Account:</label>
+            <select id="securitiesAccount" required>
+                <option value="" disabled selected>Select Option</option>
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="certificateDepositAccount">Certificate Deposit Account:</label>
+            <select id="certificateDepositAccount" required>
+                <option value="" disabled selected>Select Option</option>
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="online">Online Banking:</label>
+            <select id="online" required>
+                <option value="" disabled selected>Select Option</option>
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="creditCard">Credit Card:</label>
+            <select id="creditCard" required>
+                <option value="" disabled selected>Select Option</option>
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="mortgage">Has Mortgage:</label>
+            <select id="mortgage" required>
+                <option value="" disabled selected>Select Option</option>
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="zipCode">ZIP Code (First Two Digits):</label>
+            <select id="zipCode" required>
+                <option value="" disabled selected>Select ZIP Code</option>
+                <option value="90">90</option>
+                <option value="91">91</option>
+                <option value="92">92</option>
+                <option value="93">93</option>
+                <option value="94">94</option>
+                <option value="95">95</option>
+                <option value="Others">Others</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="modelChoice">Select Model:</label>
+            <select id="modelChoice" required>
+                <option value="" disabled selected>Select Model</option>
+                <option value="Logistic Regression">Logistic Regression</option>
+                <option value="Decision Tree">Decision Tree</option>
+                <option value="Random Forest">Random Forest</option>
+                <option value="Gradient Boosting">Gradient Boosting</option>
+            </select>
+        </div>
+        <button type="submit">Predict Loan Approval</button>
+    </form>
+
+    <div id="results">
+        <h2>Prediction Results</h2>
+        <p id="loanStatus"></p>
+        <p id="probApproval"></p>
+        <p id="probRejection"></p>
+        <p id="modelUsed"></p>
+        <div id="inputSummary"></div>
+    </div>
+
+    <script>
+        document.getElementById('predictionForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            // Collect form data
+            const formData = {
+                income: parseFloat(document.getElementById('income').value),
+                experience: parseFloat(document.getElementById('experience').value),
+                ccavg: parseFloat(document.getElementById('ccavg').value),
+                family: parseInt(document.getElementById('family').value),
+                education: document.getElementById('education').value,
+                securitiesAccount: document.getElementById('securitiesAccount').value,
+                certificateDepositAccount: document.getElementById('certificateDepositAccount').value,
+                online: document.getElementById('online').value,
+                creditCard: document.getElementById('creditCard').value,
+                mortgage: document.getElementById('mortgage').value,
+                zipCode: document.getElementById('zipCode').value,
+                modelChoice: document.getElementById('modelChoice').value
+            };
+
+            // Map education to numerical values
+            const educationMap = {
+                'High School': 1,
+                'Bachelors': 2,
+                'Masters & Above': 3
+            };
+
+            // Map dropdown values to binary for backend
+            const binaryMap = {
+                'Yes': 1,
+                'No': 0
+            };
+
+            // Prepare data for backend
+            const inputData = {
+                Income: formData.income,
+                Experience: formData.experience,
+                CCAvg: formData.ccavg,
+                Family: formData.family,
+                Education: educationMap[formData.education],
+                'Securities.Account': binaryMap[formData.securitiesAccount],
+                'Certificate.Deposit.Account': binaryMap[formData.certificateDepositAccount],
+                Online: binaryMap[formData.online],
+                CreditCard: binaryMap[formData.creditCard],
+                'Mortgage.Category': binaryMap[formData.mortgage],
+                ZIP_90: formData.zipCode === '90' ? 1 : 0,
+                ZIP_91: formData.zipCode === '91' ? 1 : 0,
+                ZIP_92: formData.zipCode === '92' ? 1 : 0,
+                ZIP_93: formData.zipCode === '93' ? 1 : 0,
+                ZIP_94: formData.zipCode === '94' ? 1 : 0,
+                ZIP_95: formData.zipCode === '95' ? 1 : 0
+            };
+
+            try {
+                // Send data to FastAPI backend
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ inputData, model: formData.modelChoice })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                // Display results
+                const resultsSection = document.getElementById('results');
+                resultsSection.style.display = 'block';
+
+                const loanStatus = data.prediction === 1 ? 'Approved' : 'Rejected';
+                document.getElementById('loanStatus').textContent = `Loan Status: ${loanStatus}`;
+                document.getElementById('probApproval').textContent = `Probability of Approval: ${(data.probabilities[1] * 100).toFixed(2)}%`;
+                document.getElementById('probRejection').textContent = `Probability of Rejection: ${(data.probabilities[0] * 100).toFixed(2)}%`;
+                document.getElementById('modelUsed').textContent = `Model Used: ${data.model}`;
+
+                // Prepare display-friendly input summary
+                const displayData = {
+                    Income: formData.income,
+                    Experience: formData.experience,
+                    CCAvg: formData.ccavg,
+                    Family: formData.family,
+                    Education: formData.education,
+                    'Securities Account': formData.securitiesAccount,
+                    'Certificate Deposit Account': formData.certificateDepositAccount,
+                    'Online Banking': formData.online,
+                    'Credit Card': formData.creditCard,
+                    'Has Mortgage': formData.mortgage,
+                    'ZIP Code': formData.zipCode
+                };
+
+                // Populate input summary
+                const inputSummary = document.getElementById('inputSummary');
+                inputSummary.innerHTML = '<strong>Input Features:</strong><br>' +
+                    Object.entries(displayData).map(([key, value]) => `${key}: ${value}`).join('<br>');
+
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred while making the prediction. Please try again.');
+            }
+        });
+    </script>
+</body>
+</html>
