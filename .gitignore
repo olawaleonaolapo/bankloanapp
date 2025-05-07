@@ -1,0 +1,15 @@
+# Data and training files
+*.csv
+bankloan.csv
+bank_loan_approval_prediction_clean.csv
+train_models.py
+compress_models.py
+
+# Python environment and cache
+venv/
+__pycache__/
+*.pyc
+
+# IDE and temporary files
+.vscode/
+*.log

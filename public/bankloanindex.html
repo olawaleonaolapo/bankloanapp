@@ -194,6 +194,12 @@
                 modelChoice: document.getElementById('modelChoice').value
             };
 
+            // Validate inputs
+            if (isNaN(formData.income) || isNaN(formData.experience) || isNaN(formData.ccavg) || isNaN(formData.family)) {
+                alert('Please enter valid numerical values for Income, Experience, CCAvg, and Family.');
+                return;
+            }
+
             // Map education to numerical values
             const educationMap = {
                 'High School': 1,
@@ -236,7 +242,8 @@
                 });
 
                 if (!response.ok) {
-                    throw new Error(`HTTP error! Status: ${response.status}`);
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || `HTTP error! Status: ${response.status}`);
                 }
 
                 const data = await response.json();
@@ -245,11 +252,10 @@
                 const resultsSection = document.getElementById('results');
                 resultsSection.style.display = 'block';
 
-                const loanStatus = data.prediction === 1 ? 'Approved' : 'Rejected';
-                document.getElementById('loanStatus').textContent = `Loan Status: ${loanStatus}`;
-                document.getElementById('probApproval').textContent = `Probability of Approval: ${(data.probabilities[1] * 100).toFixed(2)}%`;
-                document.getElementById('probRejection').textContent = `Probability of Rejection: ${(data.probabilities[0] * 100).toFixed(2)}%`;
-                document.getElementById('modelUsed').textContent = `Model Used: ${data.model}`;
+                document.getElementById('loanStatus').textContent = `Loan Status: ${data.loan_status}`;
+                document.getElementById('probApproval').textContent = `Probability of Approval: ${(data.probability_approved * 100).toFixed(2)}%`;
+                document.getElementById('probRejection').textContent = `Probability of Rejection: ${(data.probability_rejected * 100).toFixed(2)}%`;
+                document.getElementById('modelUsed').textContent = `Model Used: ${data.model_used}`;
 
                 // Prepare display-friendly input summary
                 const displayData = {
@@ -273,7 +279,7 @@
 
             } catch (error) {
                 console.error('Error:', error);
-                alert('An error occurred while making the prediction. Please try again.');
+                alert(`An error occurred while making the prediction: ${error.message}`);
             }
         });
     </script>
