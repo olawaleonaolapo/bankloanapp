@@ -21,6 +21,7 @@ PATH_TO_THIS_FILE = os.path.dirname(os.path.abspath(__file__))
 os.chdir(os.path.dirname(PATH_TO_THIS_FILE))
 print("CURRENT WORKING DIRECTORY:", os.getcwd())
 
+# Define feature names (matching input DataFrame)
 numerical_features = ["Income", "Experience", "CCAvg", "Family"]
 categorical_features = [
     "Securities.Account",
@@ -38,11 +39,21 @@ categorical_features = [
 ]
 all_features = numerical_features + categorical_features
 
+# Define feature names for transformed data (matching training order)
+model_features = [
+    "Income", "Experience", "CCAvg",
+    "Securities.Account", "Certificate.Deposit.Account", "Online", "CreditCard",
+    "Mortgage.Category", "Family", "Education", "ZIP_90", "ZIP_91", "ZIP_92",
+    "ZIP_93", "ZIP_94", "ZIP_95"
+]
+
+# Load preprocessor
 try:
     preprocessor = joblib.load(os.path.join(PATH_TO_THIS_FILE, "../preprocessor.joblib"))
 except FileNotFoundError:
     raise HTTPException(status_code=500, detail="Preprocessor file not found.")
 
+# Load models
 model_files = {
     "Logistic Regression": "Logistic Regression_best_model.joblib",
     "Decision Tree": "Decision Tree_best_model.joblib",
@@ -56,10 +67,12 @@ for name, file in model_files.items():
     except FileNotFoundError:
         raise HTTPException(status_code=500, detail=f"Model file '{file}' not found.")
 
+# Verify HTML file
 html_file = os.path.join(PATH_TO_THIS_FILE, "../public/bankloanindex.html")
 if not os.path.isfile(html_file):
     raise HTTPException(status_code=500, detail="HTML file not found.")
 
+# Pydantic model for input validation
 class PredictionInput(BaseModel):
     inputData: dict
     model: str
@@ -87,16 +100,32 @@ async def predict(data: PredictionInput):
             )
         print("Received inputData:", data.inputData)
         print("Input data types:", {k: type(v).__name__ for k, v in data.inputData.items()})
+        
+        # Create DataFrame with input feature names
         input_df = pd.DataFrame([data.inputData], columns=all_features)
+        
+        # Validate input features
         missing_cols = set(all_features) - set(data.inputData.keys())
         if missing_cols:
             raise HTTPException(status_code=400, detail=f"Missing input features: {missing_cols}")
+        
         print("Input DataFrame:", input_df)
+        
+        # Transform input data
         input_scaled = preprocessor.transform(input_df)
+        
+        # Create DataFrame with model feature names (matching training order)
+        input_scaled_df = pd.DataFrame(input_scaled, columns=model_features)
+        
+        # Debug: Print preprocessor output feature names
+        feature_names_out = preprocessor.get_feature_names_out()
+        print("Preprocessor output features:", feature_names_out)
+        
         model = models[data.model]
-        prediction = model.predict(input_scaled)[0]
-        probabilities = model.predict_proba(input_scaled)[0]
+        prediction = model.predict(input_scaled_df)[0]
+        probabilities = model.predict_proba(input_scaled_df)[0]
         print(f"Prediction for {data.model}: {prediction}, Probabilities: {probabilities}")
+        
         return {
             "loan_status": "Approved" if prediction == 1 else "Rejected",
             "probability_approved": float(probabilities[1]),

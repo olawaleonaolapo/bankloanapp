@@ -4,3 +4,5 @@ numpy==2.2.2
 pandas==2.2.3
 scikit-learn==1.6.1
 python-multipart==0.0.12
+pydantic==2.9.2
+uvicorn==0.30.6

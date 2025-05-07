@@ -12,7 +12,7 @@
   ],
   "functions": {
     "api/bankloanfabend.py": {
-      "maxDuration": 30
+      "maxDuration": 60
     }
   },
   "routes": [
@@ -21,8 +21,12 @@
       "dest": "/api/bankloanfabend.py"
     },
     {
-      "src": "/(.*)",
-      "dest": "/public/$1",
+      "src": "/",
+      "dest": "/api/bankloanfabend.py"
+    },
+    {
+      "src": "/(404|bankloanindex)\\.html",
+      "dest": "/public/$1.html",
       "headers": {
         "Cache-Control": "public, max-age=3600, must-revalidate"
       }
